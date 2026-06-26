@@ -219,7 +219,7 @@ function Hero({ project, onCta }) {
                 key={i}
                 className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-md px-4 py-3 text-white"
               >
-                <div className="text-[11px] uppercase tracking-wide text-gold font-semibold">
+                <div className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: '#ffc63c' }}>
                   {b.label}
                 </div>
                 <div className="mt-1 text-sm md:text-base font-bold leading-tight">
@@ -246,13 +246,15 @@ function Hero({ project, onCta }) {
 // ---------------------------------------------------------------------------
 function Intro({ project }) {
   return (
-    <section className="bg-white py-16 md:py-20">
-      <div className="mx-auto max-w-4xl px-4 text-justify space-y-5">
-        {(project.longDescription || []).map((p, i) => (
-          <p key={i} className="text-base md:text-lg leading-relaxed text-stone-700">
-            {p}
-          </p>
-        ))}
+    <section className="bg-white py-12 md:py-16">
+      <div className="mx-auto max-w-4xl px-4">
+        <div className="rounded-3xl bg-brand px-6 py-8 md:px-12 md:py-12 text-justify space-y-5 shadow-xl">
+          {(project.longDescription || []).map((p, i) => (
+            <p key={i} className="text-base md:text-lg leading-relaxed text-white/95">
+              {p}
+            </p>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -775,7 +777,7 @@ function Consultant({ project }) {
     <section className="bg-stone-50 py-16 md:py-20">
       <div className="mx-auto max-w-5xl px-4">
         <SectionTitle>{c.title}</SectionTitle>
-        <div className="grid md:grid-cols-5 gap-8 items-center">
+        <div className="grid md:grid-cols-5 gap-8 md:gap-16 items-center">
           <div className="md:col-span-2">
             <div className="overflow-hidden rounded-2xl ring-1 ring-stone-200 aspect-[3/4]">
               <Img src={c.image} alt={c.name} className="h-full w-full object-cover" />
@@ -853,7 +855,7 @@ function ZaloButton({ project }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat Zalo"
-      className="fixed bottom-5 right-5 z-50 grid place-items-center h-14 w-14 hover:scale-105 transition-transform"
+      className="fixed bottom-32 md:bottom-5 right-5 z-50 grid place-items-center h-14 w-14 hover:scale-105 transition-transform"
     >
       <span className="zalo-wave-2 absolute inset-0 rounded-full" style={{ backgroundColor: '#0068ff' }} />
       <span className="zalo-wave-1 absolute inset-0 rounded-full" style={{ backgroundColor: '#0068ff' }} />
@@ -885,15 +887,208 @@ function ZaloButton({ project }) {
 }
 
 // ---------------------------------------------------------------------------
+// PopupForm — popup tự hiện sau vài giây, gửi lead về Apps Script
+// ---------------------------------------------------------------------------
+function PopupForm({ project, open, onClose }) {
+  const pop = project.popup || {}
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [sending, setSending] = useState(false)
+  const [done, setDone] = useState(false)
+  const [error, setError] = useState('')
+  const webhook = import.meta.env.VITE_SHEETS_WEBHOOK_URL
+
+  const submit = async (e) => {
+    e.preventDefault()
+    setError('')
+    const cleanPhone = phone.replace(/[^\d]/g, '')
+    if (!name.trim()) return setError('Vui lòng nhập họ tên.')
+    if (cleanPhone.length < 9 || cleanPhone.length > 11)
+      return setError('Số điện thoại không hợp lệ.')
+    setSending(true)
+    try {
+      if (webhook) {
+        await fetch(webhook, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectName: project.name,
+            createdAt: new Date().toLocaleString('vi-VN'),
+            name: name.trim(),
+            phone: cleanPhone,
+            source: 'Popup - Tự hiện',
+          }),
+        })
+      }
+      setDone(true)
+      setTimeout(() => onClose(), 4000)
+    } catch (err) {
+      setError('Gửi không thành công, vui lòng gọi hotline ' + project.cta?.hotline)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  if (!open) return null
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4 animate-[fadeIn_0.2s_ease]"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-2xl rounded-3xl bg-brand p-6 md:p-10 border-2 border-dashed border-white/50 shadow-2xl max-h-[92vh] overflow-y-auto"
+      >
+        <button
+          onClick={onClose}
+          aria-label="Đóng"
+          className="absolute top-4 right-4 grid place-items-center h-9 w-9 rounded-full text-gold hover:bg-white/10 transition-colors"
+        >
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+
+        <div className="text-center text-white font-serif font-bold uppercase leading-tight">
+          {(pop.title || []).map((line, i) => (
+            <div key={i} className={i === 0 ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'}>
+              {line}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {(pop.cards || []).map((c, i) => (
+            <div key={i} className="rounded-2xl bg-gold text-brand text-center p-4 flex flex-col justify-center">
+              <div className="text-[11px] font-bold uppercase leading-tight">{c.label}</div>
+              <div className="my-1 text-2xl font-extrabold leading-none">{c.value}</div>
+              <div className="text-[11px] font-medium leading-tight">{c.sub}</div>
+            </div>
+          ))}
+        </div>
+
+        {done ? (
+          <div className="mt-8 text-center text-white py-4">
+            <h3 className="font-serif text-2xl font-bold">Cảm ơn {name}!</h3>
+            <p className="mt-2 text-white/90">
+              Bảng giá & chính sách sẽ được gửi qua Zalo số <strong>{phone}</strong>.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="mt-7 max-w-md mx-auto space-y-3">
+            <input
+              type="text"
+              placeholder="Họ và tên"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-lg bg-white px-4 py-3 text-stone-800 placeholder-stone-400 outline-none focus:ring-2 focus:ring-gold"
+            />
+            <input
+              type="tel"
+              inputMode="numeric"
+              placeholder="Số điện thoại"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full rounded-lg bg-white px-4 py-3 text-stone-800 placeholder-stone-400 outline-none focus:ring-2 focus:ring-gold"
+            />
+            {error && <p className="text-sm text-amber-200">{error}</p>}
+            <button
+              type="submit"
+              disabled={sending}
+              className="w-full rounded-full bg-gold py-3.5 font-bold text-white uppercase hover:bg-gold-dark transition-colors disabled:opacity-60"
+            >
+              {sending ? 'Đang gửi…' : pop.button || 'Nhận ngay'}
+            </button>
+            <p className="text-center text-xs text-white/70">{project.cta?.note}</p>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// FloatingCTAs — 2 nút nổi: tư vấn Zalo + tải bảng giá (mở popup)
+// ---------------------------------------------------------------------------
+function FloatingCTAs({ project, onOpenPopup }) {
+  const [collapsed, setCollapsed] = useState(false)
+
+  if (collapsed) {
+    return (
+      <button
+        onClick={() => setCollapsed(false)}
+        aria-label="Mở rộng"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 grid place-items-center h-10 w-12 rounded-full bg-black/30 text-white backdrop-blur-md ring-1 ring-white/30 shadow-lg hover:bg-black/40 transition"
+      >
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+      </button>
+    )
+  }
+
+  return (
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-sm">
+      <div className="relative rounded-3xl bg-white/20 backdrop-blur-md ring-1 ring-white/30 shadow-xl p-3 pt-5 flex flex-col gap-2">
+        <button
+          onClick={() => setCollapsed(true)}
+          aria-label="Thu gọn"
+          className="absolute -top-3 left-1/2 -translate-x-1/2 grid place-items-center h-7 w-12 rounded-full bg-black/35 text-white backdrop-blur-md ring-1 ring-white/30 hover:bg-black/50 transition"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.6" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <a
+          href={project.zalo}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-center gap-2 rounded-full py-3 px-5 font-bold text-white shadow-lg shadow-black/30 hover:brightness-110 transition"
+          style={{ backgroundColor: '#0068ff' }}
+        >
+          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 3C6.99 3 3 6.36 3 10.5c0 2.3 1.23 4.35 3.17 5.74-.13.86-.5 1.96-1.3 2.96-.2.25-.02.62.3.58 1.66-.22 3.07-.86 4.04-1.46.86.2 1.76.31 2.69.31 5.01 0 9-3.36 9-7.5S17.01 3 12 3z" />
+          </svg>
+          TƯ VẤN QUA ZALO
+        </a>
+        <button
+          onClick={onOpenPopup}
+          className="w-full flex items-center justify-center gap-2 rounded-full py-3 px-5 font-bold text-white shadow-lg shadow-black/30 hover:brightness-110 transition"
+          style={{ backgroundColor: '#e11d2a' }}
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
+          </svg>
+          TẢI 10 CĂN GIÁ TỐT THÁNG NÀY
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // LandingPage — bố cục tổng + áp theme bằng biến CSS
 // ---------------------------------------------------------------------------
 export default function LandingPage({ project }) {
   const t = project.theme || {}
   const [zoom, setZoom] = useState(null)
+  const [popupOpen, setPopupOpen] = useState(false)
   const openLightbox = (src, alt) => setZoom({ src, alt })
   const scrollToForm = () => {
     document.getElementById('lead-form-1')?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  // Tự hiện popup sau delay (1 lần/phiên)
+  useEffect(() => {
+    if (sessionStorage.getItem('hpp_popup_shown')) return
+    const timer = setTimeout(() => {
+      setPopupOpen(true)
+      sessionStorage.setItem('hpp_popup_shown', '1')
+    }, project.popup?.delay ?? 10000)
+    return () => clearTimeout(timer)
+  }, [project.popup?.delay])
 
   return (
     <LightboxContext.Provider value={openLightbox}>
@@ -924,6 +1119,8 @@ export default function LandingPage({ project }) {
       <LeadForm project={project} source="Form 3 - Sau tư vấn viên" id="lead-form-3" />
       <Footer project={project} />
       <ZaloButton project={project} />
+      <FloatingCTAs project={project} onOpenPopup={() => setPopupOpen(true)} />
+      <PopupForm project={project} open={popupOpen} onClose={() => setPopupOpen(false)} />
       <Lightbox data={zoom} onClose={() => setZoom(null)} />
     </div>
     </LightboxContext.Provider>

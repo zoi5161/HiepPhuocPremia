@@ -76,6 +76,18 @@ export const project = {
     note: '* Thông tin của quý khách được bảo mật tuyệt đối',
   },
 
+  // Popup tự hiện sau vài giây vào web
+  popup: {
+    delay: 10000, // ms — hiện sau 10 giây
+    title: ['ĐĂNG KÝ NHẬN', 'BẢNG GIÁ & CHÍNH SÁCH ƯU ĐÃI HIỆP PHƯỚC PREMIA'],
+    cards: [
+      { label: 'THANH TOÁN GIÃN', value: '30 THÁNG', sub: 'Cứ 2 tháng thanh toán 5%' },
+      { label: 'HỖ TRỢ LÃI SUẤT', value: '12 THÁNG', sub: 'Miễn gốc & lãi khi vay ngân hàng' },
+      { label: 'CHIẾT KHẤU', value: 'ĐẾN 9%', sub: 'Thanh toán nhanh · Book sớm +1%' },
+    ],
+    button: 'TÔI MUỐN NHẬN NGAY',
+  },
+
   location: {
     title: 'VỊ TRÍ HIỆP PHƯỚC PREMIA\nTÂM ĐIỂM TĂNG TRƯỞNG NAM SÀI GÒN',
     paragraphs: [
