@@ -203,10 +203,13 @@ function Hero({ project, onCta }) {
       />
       <div className="relative mx-auto max-w-6xl px-4 py-16 w-full -translate-y-20">
         <div className="max-w-3xl">
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.85),0_0_28px_rgba(0,0,0,0.6)]">
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight [text-shadow:0_2px_6px_rgba(0,0,0,0.55),0_0_18px_rgba(0,0,0,0.4)]">
             {project.name}
           </h1>
-          <p className="mt-5 text-lg md:text-2xl font-semibold text-gold leading-snug [text-shadow:0_2px_8px_rgba(0,0,0,0.95),0_0_24px_rgba(0,0,0,0.7)]">
+          <p
+            className="mt-5 text-lg md:text-2xl font-semibold leading-snug [text-shadow:0_1px_2px_rgba(0,0,0,0.95),0_2px_6px_rgba(0,0,0,0.7)]"
+            style={{ color: '#f4b826' }}
+          >
             {project.shortDescription}
           </p>
 
