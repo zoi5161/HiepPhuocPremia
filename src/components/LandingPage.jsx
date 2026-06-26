@@ -1019,7 +1019,7 @@ function FloatingCTAs({ project, onOpenPopup }) {
       <button
         onClick={() => setCollapsed(false)}
         aria-label="Mở rộng"
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 grid place-items-center h-10 w-12 rounded-full bg-black/30 text-white backdrop-blur-md ring-1 ring-white/30 shadow-lg hover:bg-black/40 transition"
+        className="fixed bottom-4 left-4 z-40 grid place-items-center h-10 w-12 rounded-full bg-black/30 text-white backdrop-blur-md ring-1 ring-white/30 shadow-lg hover:bg-black/40 transition"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -1029,7 +1029,7 @@ function FloatingCTAs({ project, onOpenPopup }) {
   }
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-sm">
+    <div className="fixed bottom-4 left-4 z-40 w-[calc(100%-2rem)] max-w-sm">
       <div className="relative rounded-3xl bg-white/20 backdrop-blur-md ring-1 ring-white/30 shadow-xl p-3 pt-5 flex flex-col gap-2">
         <button
           onClick={() => setCollapsed(true)}
