@@ -1,4 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+
+// Context cung cấp hàm mở lightbox cho mọi <Img zoomable>
+const LightboxContext = createContext(null)
 
 // ---------------------------------------------------------------------------
 // Img — thử lần lượt các đuôi file nếu đường dẫn không có đuôi, fallback placehold.
@@ -6,11 +9,12 @@ import { useEffect, useRef, useState } from 'react'
 // ---------------------------------------------------------------------------
 const EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif']
 
-function Img({ src, alt = '', className = '', ...rest }) {
+function Img({ src, alt = '', className = '', zoomable = true, ...rest }) {
   const isExternal = /^https?:\/\//i.test(src || '')
   const hasExt = /\.[a-z0-9]+$/i.test(src || '')
   const [idx, setIdx] = useState(0)
   const [failed, setFailed] = useState(false)
+  const openLightbox = useContext(LightboxContext)
 
   let resolved
   if (!src) resolved = `https://placehold.co/800x600?text=Image`
@@ -25,15 +29,61 @@ function Img({ src, alt = '', className = '', ...rest }) {
     }
   }
 
+  const displaySrc = failed
+    ? 'https://placehold.co/800x600?text=H%E1%BB%A3p+Ph%C6%B0%E1%BB%9Bc+Premia'
+    : resolved
+  const canZoom = zoomable && openLightbox
+
   return (
     <img
-      src={failed ? 'https://placehold.co/800x600?text=H%E1%BB%A3p+Ph%C6%B0%E1%BB%9Bc+Premia' : resolved}
+      src={displaySrc}
       alt={alt}
       loading="lazy"
-      className={className}
+      className={`${className}${canZoom ? ' cursor-pointer' : ''}`}
       onError={failed ? undefined : handleError}
+      onClick={canZoom ? () => openLightbox(displaySrc, alt) : undefined}
       {...rest}
     />
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Lightbox — phóng ảnh ra giữa màn hình, nền tối nhẹ, X / click ngoài để tắt
+// ---------------------------------------------------------------------------
+function Lightbox({ data, onClose }) {
+  useEffect(() => {
+    if (!data) return
+    const onKey = (e) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [data, onClose])
+
+  if (!data) return null
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 animate-[fadeIn_0.2s_ease]"
+    >
+      <button
+        onClick={onClose}
+        aria-label="Đóng"
+        className="absolute top-5 right-5 grid place-items-center h-11 w-11 rounded-full bg-white/15 text-white hover:bg-white/30 transition-colors"
+      >
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+      <img
+        src={data.src}
+        alt={data.alt}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[90vh] max-w-[92vw] rounded-xl object-contain shadow-2xl"
+      />
+    </div>
   )
 }
 
@@ -44,7 +94,7 @@ function SectionTitle({ children, light = false }) {
   return (
     <div className="text-center mb-10 md:mb-14">
       <h2
-        className={`text-2xl md:text-4xl font-bold uppercase tracking-tight ${
+        className={`font-serif text-2xl md:text-4xl font-bold uppercase tracking-tight ${
           light ? 'text-white' : 'text-brand'
         }`}
       >
@@ -58,14 +108,29 @@ function SectionTitle({ children, light = false }) {
 // ---------------------------------------------------------------------------
 // Header — fixed, ẩn khi cuộn xuống / hiện khi cuộn lên
 // ---------------------------------------------------------------------------
-function Header({ project, onCta }) {
+const NAV_ITEMS = [
+  { label: 'Tổng quan', href: '#tong-quan' },
+  { label: 'Vị trí', href: '#vi-tri' },
+  { label: 'Tiện ích', href: '#tien-ich' },
+  { label: 'Mặt bằng', href: '#mat-bang' },
+  { label: 'Giá bán', href: '#gia-ban' },
+  { label: 'Liên hệ', href: '#lead-form-1' },
+]
+
+function Header({ project }) {
   const [hidden, setHidden] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [pill, setPill] = useState(null) // { left, width } của option đang hover
   const lastY = useRef(0)
+
+  const moveTo = (el, idx) =>
+    setPill({ left: el.offsetLeft, width: el.offsetWidth, idx })
 
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY
       setHidden(y > lastY.current && y > 120)
+      setScrolled(y > 80)
       lastY.current = y
     }
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -74,25 +139,51 @@ function Header({ project, onCta }) {
 
   return (
     <header
-      className="fixed top-0 inset-x-0 z-50 transition-transform duration-300"
+      className="fixed top-0 inset-x-0 z-50 transition-all duration-300"
       style={{
         transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
-        backgroundColor: project.theme?.nav || 'var(--color-brand)',
+        backgroundColor: scrolled ? '#ffffff' : 'transparent',
+        boxShadow: scrolled ? '0 2px 12px rgba(0,0,0,0.12)' : 'none',
       }}
     >
-      <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3 text-white font-bold tracking-wide">
-          <span className="grid place-items-center h-9 w-9 rounded-lg bg-gold text-brand font-extrabold">
-            P
-          </span>
-          <span className="text-base md:text-lg">{project.name}</span>
-        </div>
-        <button
-          onClick={onCta}
-          className="rounded-full bg-gold px-4 md:px-6 py-2 text-sm md:text-base font-semibold text-brand hover:bg-gold-dark hover:text-white transition-colors"
+      <div className="mx-auto max-w-6xl px-4 h-20 flex items-center justify-center md:justify-between">
+        <Img
+          src={project.logo || '/images/logo.png'}
+          alt={project.name}
+          zoomable={false}
+          className={`hidden md:block h-12 w-auto max-w-[170px] object-contain transition-opacity duration-300 ${
+            scrolled ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        />
+        <nav
+          onMouseLeave={() => setPill(null)}
+          className="relative flex items-center gap-4 md:gap-7 overflow-x-auto py-2 px-3 md:px-6"
         >
-          Nhận bảng giá
-        </button>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full"
+            style={{
+              height: '2.5rem',
+              left: pill?.left ?? 0,
+              width: pill?.width ?? 0,
+              opacity: pill ? 1 : 0,
+              backgroundColor: 'var(--color-gold)',
+              transition:
+                'left 480ms cubic-bezier(0.34,1.56,0.64,1), width 480ms cubic-bezier(0.34,1.56,0.64,1), opacity 250ms ease',
+            }}
+          />
+          {NAV_ITEMS.map((item, i) => (
+            <a
+              key={item.href}
+              href={item.href}
+              onMouseEnter={(e) => moveTo(e.currentTarget, i)}
+              className="relative z-10 whitespace-nowrap rounded-full px-4 py-1.5 text-sm md:text-base font-semibold transition-colors"
+              style={{ color: pill?.idx === i ? '#ffffff' : 'var(--color-brand)' }}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
       </div>
     </header>
   )
@@ -103,19 +194,19 @@ function Header({ project, onCta }) {
 // ---------------------------------------------------------------------------
 function Hero({ project, onCta }) {
   return (
-    <section className="relative min-h-[88vh] flex items-center pt-16 overflow-hidden">
+    <section className="relative min-h-[88vh] flex items-center pt-20 overflow-hidden">
       <Img
         src={project.heroImage}
         alt={project.name}
-        className="absolute inset-0 h-full w-full object-cover"
+        zoomable={false}
+        className="absolute inset-0 h-full w-full object-cover object-top"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/20" />
-      <div className="relative mx-auto max-w-6xl px-4 py-16 w-full">
-        <div className="max-w-2xl">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+      <div className="relative mx-auto max-w-6xl px-4 py-16 w-full -translate-y-20">
+        <div className="max-w-3xl">
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight [text-shadow:0_2px_8px_rgba(0,0,0,0.85),0_0_28px_rgba(0,0,0,0.6)]">
             {project.name}
           </h1>
-          <p className="mt-5 text-lg md:text-2xl font-semibold text-gold leading-snug">
+          <p className="mt-5 text-lg md:text-2xl font-semibold text-gold leading-snug [text-shadow:0_2px_8px_rgba(0,0,0,0.95),0_0_24px_rgba(0,0,0,0.7)]">
             {project.shortDescription}
           </p>
 
@@ -137,7 +228,7 @@ function Hero({ project, onCta }) {
 
           <button
             onClick={onCta}
-            className="mt-9 rounded-full bg-gold px-8 py-3.5 text-base md:text-lg font-bold text-brand hover:bg-gold-dark hover:text-white transition-colors shadow-lg shadow-black/30"
+            className="mt-9 rounded-full bg-gold px-8 py-3.5 text-base md:text-lg font-bold text-white hover:bg-gold-dark transition-colors shadow-lg shadow-black/30"
           >
             Nhận bảng giá & giỏ hàng
           </button>
@@ -153,7 +244,7 @@ function Hero({ project, onCta }) {
 function Intro({ project }) {
   return (
     <section className="bg-white py-16 md:py-20">
-      <div className="mx-auto max-w-3xl px-4 text-center space-y-5">
+      <div className="mx-auto max-w-4xl px-4 text-justify space-y-5">
         {(project.longDescription || []).map((p, i) => (
           <p key={i} className="text-base md:text-lg leading-relaxed text-stone-700">
             {p}
@@ -169,7 +260,7 @@ function Intro({ project }) {
 // ---------------------------------------------------------------------------
 function ProjectInfo({ project }) {
   return (
-    <section className="bg-stone-50 py-16 md:py-20">
+    <section id="tong-quan" className="scroll-mt-20 bg-stone-50 py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <SectionTitle>{project.infoTitle}</SectionTitle>
         <div className="grid lg:grid-cols-2 gap-10 items-center">
@@ -180,7 +271,17 @@ function ProjectInfo({ project }) {
                   <dt className="col-span-1 text-sm font-semibold text-brand">
                     {row.label}
                   </dt>
-                  <dd className="col-span-2 text-sm text-stone-700">{row.value}</dd>
+                  <dd className="col-span-2 text-sm text-stone-700">
+                    {row.value.includes('·') ? (
+                      <ul className="space-y-1">
+                        {row.value.split('·').map((part, j) => (
+                          <li key={j}>{part.trim()}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      row.value
+                    )}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -246,6 +347,12 @@ function LeadForm({ project, source, id }) {
         console.warn('VITE_SHEETS_WEBHOOK_URL chưa cấu hình — bỏ qua gửi.')
       }
       setDone(true)
+      // Sau 5s tự quay lại form trống
+      setTimeout(() => {
+        setDone(false)
+        setName('')
+        setPhone('')
+      }, 5000)
     } catch (err) {
       // no-cors không đọc được response; lỗi mạng thật mới rơi vào đây
       setError('Gửi không thành công, vui lòng gọi hotline ' + project.cta?.hotline)
@@ -258,7 +365,7 @@ function LeadForm({ project, source, id }) {
     <section id={id} className="bg-brand py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4 grid lg:grid-cols-2 gap-10 items-center">
         <div className="text-white">
-          <h2 className="text-2xl md:text-4xl font-bold uppercase leading-tight">
+          <h2 className="font-serif text-2xl md:text-4xl font-bold uppercase leading-tight">
             {project.cta?.title}
           </h2>
           <p className="mt-4 text-stone-200 text-base md:text-lg">
@@ -313,7 +420,7 @@ function LeadForm({ project, source, id }) {
               <button
                 type="submit"
                 disabled={sending}
-                className="w-full rounded-lg bg-gold py-3.5 font-bold text-brand hover:bg-gold-dark hover:text-white transition-colors disabled:opacity-60"
+                className="w-full rounded-lg bg-gold py-3.5 font-bold text-white hover:bg-gold-dark transition-colors disabled:opacity-60"
               >
                 {sending ? 'Đang gửi…' : 'Nhận bảng giá ngay'}
               </button>
@@ -332,21 +439,38 @@ function LeadForm({ project, source, id }) {
 function Location({ project }) {
   const loc = project.location || {}
   return (
-    <section className="bg-white py-16 md:py-20">
-      <div className="mx-auto max-w-4xl px-4">
+    <section id="vi-tri" className="scroll-mt-20 bg-white py-16 md:py-20">
+      <div className="mx-auto max-w-6xl px-4">
         <SectionTitle>{loc.title}</SectionTitle>
-        <div className="space-y-4 max-w-3xl mx-auto text-center">
-          {(loc.paragraphs || []).map((p, i) => (
-            <p key={i} className="text-base md:text-lg leading-relaxed text-stone-700">
-              {p}
-            </p>
-          ))}
-        </div>
-        {loc.image && (
-          <div className="mt-10 max-w-2xl mx-auto overflow-hidden rounded-2xl shadow-md ring-1 ring-stone-200">
-            <Img src={loc.image} alt={loc.title} className="w-full object-cover" />
+        <div className="grid lg:grid-cols-2 gap-10 items-center">
+          <div className="space-y-4 text-justify">
+            {(loc.paragraphs || []).map((p, i) => (
+              <p key={i} className="text-base md:text-lg leading-relaxed text-stone-700">
+                {p}
+              </p>
+            ))}
+            {loc.connections?.length > 0 && (
+              <div className="pt-1">
+                {loc.connectionsTitle && (
+                  <p className="font-semibold text-brand mb-2">{loc.connectionsTitle}</p>
+                )}
+                <ul className="space-y-2.5">
+                  {loc.connections.map((c, i) => (
+                    <li key={i} className="flex gap-3 text-base md:text-lg leading-relaxed text-stone-700">
+                      <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gold" />
+                      <span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-        )}
+          {loc.image && (
+            <div className="overflow-hidden rounded-2xl ring-1 ring-stone-200">
+              <Img src={loc.image} alt={loc.title} className="w-full object-cover" />
+            </div>
+          )}
+        </div>
       </div>
     </section>
   )
@@ -367,7 +491,7 @@ function Differences({ project }) {
               key={i}
               className="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-stone-200"
             >
-              <div className="grid place-items-center h-12 w-12 rounded-full bg-brand text-gold text-xl font-extrabold">
+              <div className="grid place-items-center h-12 w-12 rounded-full bg-brand text-white text-xl font-extrabold">
                 {i + 1}
               </div>
               <h3 className="mt-5 text-lg font-bold text-brand uppercase leading-snug">
@@ -388,10 +512,10 @@ function Differences({ project }) {
 function Amenities({ project }) {
   const a = project.amenities || {}
   return (
-    <section className="bg-white py-16 md:py-20">
+    <section id="tien-ich" className="scroll-mt-20 bg-white py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <SectionTitle>{a.title}</SectionTitle>
-        <div className="space-y-4 max-w-3xl mx-auto text-center mb-12">
+        <div className="space-y-4 max-w-3xl mx-auto text-justify mb-12">
           {(a.paragraphs || []).map((p, i) => (
             <p key={i} className="text-base md:text-lg leading-relaxed text-stone-700">
               {p}
@@ -401,7 +525,7 @@ function Amenities({ project }) {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {(a.images || []).map((img, i) => (
             <figure key={i} className="group">
-              <div className="overflow-hidden rounded-xl shadow-sm ring-1 ring-stone-200 aspect-[4/3]">
+              <div className="overflow-hidden rounded-xl ring-1 ring-stone-200 aspect-[4/3]">
                 <Img
                   src={img.src}
                   alt={img.caption}
@@ -425,12 +549,12 @@ function Amenities({ project }) {
 function FloorPlan({ project }) {
   const f = project.floorPlan || {}
   return (
-    <section className="bg-stone-50 py-16 md:py-20">
+    <section id="mat-bang" className="scroll-mt-20 bg-stone-50 py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <SectionTitle>{f.title}</SectionTitle>
         <div className="grid lg:grid-cols-2 gap-10 items-center">
           {f.image && (
-            <div className="overflow-hidden rounded-2xl shadow-md ring-1 ring-stone-200">
+            <div className="overflow-hidden rounded-2xl ring-1 ring-stone-200">
               <Img src={f.image} alt={f.title} className="w-full object-cover" />
             </div>
           )}
@@ -456,7 +580,7 @@ function Design({ project }) {
     <section className="bg-white py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <SectionTitle>{d.title}</SectionTitle>
-        <div className="space-y-4 max-w-3xl mx-auto text-center mb-10">
+        <div className="space-y-4 max-w-3xl mx-auto text-justify mb-10">
           {(d.paragraphs || []).map((p, i) => (
             <p key={i} className="text-base md:text-lg leading-relaxed text-stone-700">
               {p}
@@ -467,7 +591,7 @@ function Design({ project }) {
           {(d.images || []).map((src, i) => (
             <div
               key={i}
-              className="overflow-hidden rounded-2xl shadow-md ring-1 ring-stone-200 aspect-[4/3]"
+              className="overflow-hidden rounded-2xl ring-1 ring-stone-200 aspect-[4/3]"
             >
               <Img src={src} alt={`${d.title} ${i + 1}`} className="h-full w-full object-cover" />
             </div>
@@ -484,7 +608,7 @@ function Design({ project }) {
 function Pricing({ project, onCta }) {
   const p = project.pricing || {}
   return (
-    <section className="bg-stone-50 py-16 md:py-20">
+    <section id="gia-ban" className="scroll-mt-20 bg-stone-50 py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <SectionTitle>{p.title}</SectionTitle>
         <div className="grid md:grid-cols-3 gap-6">
@@ -494,7 +618,7 @@ function Pricing({ project, onCta }) {
               className="rounded-2xl overflow-hidden bg-white shadow-sm ring-1 ring-stone-200 flex flex-col"
             >
               <div className="bg-brand px-6 py-4 text-center">
-                <h3 className="text-gold font-bold text-lg leading-tight">{u.type}</h3>
+                <h3 className="text-white font-bold text-lg leading-tight">{u.type}</h3>
               </div>
               <div className="p-6 flex-1 flex flex-col gap-3">
                 <Row label="Diện tích" value={u.area} />
@@ -502,7 +626,7 @@ function Pricing({ project, onCta }) {
                 <Row label="Thanh toán" value={u.payment} />
                 <button
                   onClick={onCta}
-                  className="mt-auto rounded-lg bg-gold py-2.5 font-semibold text-brand hover:bg-gold-dark hover:text-white transition-colors"
+                  className="mt-auto rounded-lg bg-gold py-2.5 font-semibold text-white hover:bg-gold-dark transition-colors"
                 >
                   Nhận báo giá chi tiết
                 </button>
@@ -543,7 +667,7 @@ function Reasons({ project }) {
         <div className="space-y-5">
           {(r.items || []).map((item, i) => (
             <div key={i} className="flex gap-5 items-start">
-              <div className="shrink-0 grid place-items-center h-11 w-11 rounded-full bg-gold text-brand font-extrabold">
+              <div className="shrink-0 grid place-items-center h-11 w-11 rounded-full bg-gold text-white font-extrabold">
                 {i + 1}
               </div>
               <div>
@@ -650,12 +774,12 @@ function Consultant({ project }) {
         <SectionTitle>{c.title}</SectionTitle>
         <div className="grid md:grid-cols-5 gap-8 items-center">
           <div className="md:col-span-2">
-            <div className="overflow-hidden rounded-2xl shadow-md ring-1 ring-stone-200 aspect-[3/4]">
+            <div className="overflow-hidden rounded-2xl ring-1 ring-stone-200 aspect-[3/4]">
               <Img src={c.image} alt={c.name} className="h-full w-full object-cover" />
             </div>
           </div>
           <div className="md:col-span-3">
-            <h3 className="text-2xl font-extrabold text-brand">{c.name}</h3>
+            <h3 className="font-serif text-3xl font-extrabold text-brand">{c.name}</h3>
             <p className="text-gold-dark font-semibold">{c.role}</p>
             <div className="mt-4 space-y-3 text-stone-600 leading-relaxed">
               {(c.description || []).map((p, i) => (
@@ -664,7 +788,7 @@ function Consultant({ project }) {
             </div>
             <a
               href={`tel:${tel}`}
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 font-bold text-gold hover:bg-brand-light transition-colors"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 font-bold text-white hover:bg-brand-light transition-colors"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z" />
@@ -684,31 +808,31 @@ function Consultant({ project }) {
 function Footer({ project }) {
   const f = project.footer || {}
   return (
-    <footer className="bg-brand text-stone-200 py-12">
+    <footer className="bg-white text-stone-600 py-12 border-t border-stone-200">
       <div className="mx-auto max-w-6xl px-4 grid md:grid-cols-2 gap-8">
         <div>
-          <div className="flex items-center gap-3 text-white font-bold text-lg">
-            <span className="grid place-items-center h-9 w-9 rounded-lg bg-gold text-brand font-extrabold">
-              P
-            </span>
-            {project.name}
+          <div className="flex items-center">
+            <Img
+              src={project.logo || '/images/logo.png'}
+              alt={project.name}
+              zoomable={false}
+              className="h-20 w-auto max-w-[260px] object-contain"
+            />
           </div>
-          <p className="mt-4 text-sm leading-relaxed">{f.company}</p>
-          <p className="text-sm">{f.address}</p>
         </div>
         <div className="md:text-right space-y-1.5 text-sm">
           <p>
             Hotline:{' '}
-            <a href={`tel:${(f.hotline || '').replace(/[^\d+]/g, '')}`} className="text-gold font-bold">
+            <a href={`tel:${(f.hotline || '').replace(/[^\d+]/g, '')}`} className="text-gold-dark font-bold">
               {f.hotline}
             </a>
           </p>
           <p>
-            Email: <a href={`mailto:${f.email}`} className="text-gold">{f.email}</a>
+            Email: <a href={`mailto:${f.email}`} className="text-gold-dark">{f.email}</a>
           </p>
         </div>
       </div>
-      <div className="mx-auto max-w-6xl px-4 mt-8 pt-6 border-t border-white/15 text-center text-xs text-stone-400">
+      <div className="mx-auto max-w-6xl px-4 mt-8 pt-6 border-t border-stone-200 text-center text-xs text-stone-400">
         {f.copyright}
       </div>
     </footer>
@@ -726,11 +850,33 @@ function ZaloButton({ project }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat Zalo"
-      className="fixed bottom-5 right-5 z-50 grid place-items-center h-14 w-14 rounded-full text-white font-bold shadow-lg shadow-black/30 hover:scale-105 transition-transform"
-      style={{ backgroundColor: '#0068ff' }}
+      className="fixed bottom-5 right-5 z-50 grid place-items-center h-14 w-14 hover:scale-105 transition-transform"
     >
-      <span className="text-xs leading-none font-extrabold">Zalo</span>
-      <span className="absolute inline-flex h-full w-full rounded-full opacity-40 animate-ping" style={{ backgroundColor: '#0068ff' }} />
+      <span className="zalo-wave-2 absolute inset-0 rounded-full" style={{ backgroundColor: '#0068ff' }} />
+      <span className="zalo-wave-1 absolute inset-0 rounded-full" style={{ backgroundColor: '#0068ff' }} />
+      <span
+        className="relative grid place-items-center h-full w-full rounded-full text-white shadow-lg shadow-black/30"
+        style={{ backgroundColor: '#0068ff' }}
+      >
+        <svg className="h-8 w-8" viewBox="0 0 48 48">
+          <path
+            fill="#fff"
+            d="M24 9C14.6 9 7 15.4 7 23.3c0 4.3 2.3 8.1 5.9 10.7-.2 1.6-.9 3.6-2.4 5.4-.4.5 0 1.2.6 1.1 3-.4 5.6-1.6 7.4-2.7 1.7.4 3.5.6 5.5.6 9.4 0 17-6.4 17-14.3S33.4 9 24 9z"
+          />
+          <text
+            x="24"
+            y="27.5"
+            fontSize="11.5"
+            fontWeight="800"
+            fontStyle="italic"
+            fill="#0068ff"
+            textAnchor="middle"
+            fontFamily="Arial, sans-serif"
+          >
+            Zalo
+          </text>
+        </svg>
+      </span>
     </a>
   )
 }
@@ -740,11 +886,14 @@ function ZaloButton({ project }) {
 // ---------------------------------------------------------------------------
 export default function LandingPage({ project }) {
   const t = project.theme || {}
+  const [zoom, setZoom] = useState(null)
+  const openLightbox = (src, alt) => setZoom({ src, alt })
   const scrollToForm = () => {
     document.getElementById('lead-form-1')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
+    <LightboxContext.Provider value={openLightbox}>
     <div
       style={{
         '--color-brand': t.brand || '#0f3d2e',
@@ -753,7 +902,7 @@ export default function LandingPage({ project }) {
         '--color-gold-dark': t.goldDark || '#a9883f',
       }}
     >
-      <Header project={project} onCta={scrollToForm} />
+      <Header project={project} />
       <Hero project={project} onCta={scrollToForm} />
       <Intro project={project} />
       <ProjectInfo project={project} />
@@ -772,6 +921,8 @@ export default function LandingPage({ project }) {
       <LeadForm project={project} source="Form 3 - Sau tư vấn viên" id="lead-form-3" />
       <Footer project={project} />
       <ZaloButton project={project} />
+      <Lightbox data={zoom} onClose={() => setZoom(null)} />
     </div>
+    </LightboxContext.Provider>
   )
 }

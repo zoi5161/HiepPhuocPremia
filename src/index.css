@@ -5,7 +5,14 @@
   --color-brand-light: #1b5e44;
   --color-gold: #c9a86a;
   --color-gold-dark: #a9883f;
-  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+}
+
+/* Playfair Display mặc định dùng số kiểu cổ (thòng xuống) → ép về số canh dòng */
+.font-serif {
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1;
 }
 
 html {
@@ -22,4 +29,49 @@ button:not(:disabled),
 [role="button"],
 a {
   cursor: pointer;
+}
+
+/* Sóng lan toả cho nút Zalo — toả ra rồi nghỉ ~0.5s mới toả tiếp */
+@keyframes zalo-wave-1 {
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  76% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+@keyframes zalo-wave-2 {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  76% {
+    transform: scale(2.05);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.05);
+    opacity: 0;
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.zalo-wave-1 {
+  animation: zalo-wave-1 2.1s ease-out infinite;
+}
+.zalo-wave-2 {
+  animation: zalo-wave-2 2.1s ease-out infinite;
 }
