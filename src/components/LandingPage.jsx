@@ -94,7 +94,7 @@ function SectionTitle({ children, light = false }) {
   return (
     <div className="text-center mb-10 md:mb-14">
       <h2
-        className={`font-serif text-balance text-2xl md:text-4xl font-bold uppercase tracking-tight ${
+        className={`font-serif text-balance whitespace-pre-line leading-[1.35] text-2xl md:text-4xl font-bold uppercase tracking-tight ${
           light ? 'text-white' : 'text-brand'
         }`}
       >

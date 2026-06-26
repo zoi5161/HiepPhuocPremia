@@ -77,7 +77,7 @@ export const project = {
   },
 
   location: {
-    title: 'VỊ TRÍ HIỆP PHƯỚC PREMIA - TÂM ĐIỂM TĂNG TRƯỞNG NAM SÀI GÒN',
+    title: 'VỊ TRÍ HIỆP PHƯỚC PREMIA\nTÂM ĐIỂM TĂNG TRƯỞNG NAM SÀI GÒN',
     paragraphs: [
       'Hiệp Phước Premia tọa lạc tại trục Nguyễn Văn Tạo nối dài, bên hơn 1km bờ sông Soài Rạp - vị trí "kề giang cận lộ" hội tụ các động lực phát triển Logistics - Đô thị - Cảng biển - Sân bay - Metro của Nam Sài Gòn.',
     ],
