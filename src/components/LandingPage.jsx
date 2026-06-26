@@ -640,7 +640,7 @@ function Pricing({ project, onCta }) {
           ))}
         </div>
         {p.note && (
-          <p className="mt-8 text-center text-sm text-stone-500 max-w-2xl mx-auto">
+          <p className="mt-8 text-center text-sm text-stone-500 md:whitespace-nowrap">
             {p.note}
           </p>
         )}
