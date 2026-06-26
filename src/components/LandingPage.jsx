@@ -296,12 +296,12 @@ function ProjectInfo({ project }) {
             {(project.highlights || []).map((h, i) => (
               <div
                 key={i}
-                className="aspect-square w-full max-w-[200px] rounded-full bg-brand border-4 border-gold flex flex-col items-center justify-center text-center text-white p-4"
+                className="group aspect-square w-full max-w-[200px] rounded-full bg-brand border-4 border-gold flex flex-col items-center justify-center text-center text-white p-4 transition-all duration-300 hover:scale-105 hover:bg-gold hover:shadow-xl"
               >
-                <div className="text-2xl md:text-3xl font-extrabold text-gold">
+                <div className="text-2xl md:text-3xl font-extrabold text-gold transition-colors duration-300 group-hover:text-brand">
                   {h.value}
                 </div>
-                <div className="mt-1 text-xs md:text-sm font-medium leading-tight">
+                <div className="mt-1 text-xs md:text-sm font-medium leading-tight transition-colors duration-300 group-hover:text-brand">
                   {h.label}
                 </div>
               </div>
@@ -311,6 +311,70 @@ function ProjectInfo({ project }) {
       </div>
     </section>
   )
+}
+
+// ---------------------------------------------------------------------------
+// Particles — vài hạt li ti trôi nhẹ trong nền
+// ---------------------------------------------------------------------------
+function Particles({ count = 130 }) {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const parent = canvas.parentElement
+    const ctx = canvas.getContext('2d')
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    let w = 0
+    let h = 0
+    let parts = []
+    let raf = 0
+
+    const init = () => {
+      const rect = parent.getBoundingClientRect()
+      w = rect.width
+      h = rect.height
+      canvas.width = w * dpr
+      canvas.height = h * dpr
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      parts = Array.from({ length: count }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 0.7 + Math.random() * 1.8, // size nhỏ, ngẫu nhiên (tối đa ~2.5)
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        a: 0.12 + Math.random() * 0.33,
+      }))
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h)
+      for (const p of parts) {
+        p.x += p.vx
+        p.y += p.vy
+        if (p.x < -12) p.x = w + 12
+        if (p.x > w + 12) p.x = -12
+        if (p.y < -12) p.y = h + 12
+        if (p.y > h + 12) p.y = -12
+
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(255,255,255,${p.a})`
+        ctx.fill()
+      }
+      raf = requestAnimationFrame(draw)
+    }
+
+    init()
+    draw()
+    const ro = new ResizeObserver(init)
+    ro.observe(parent)
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+    }
+  }, [count])
+
+  return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0" aria-hidden />
 }
 
 // ---------------------------------------------------------------------------
@@ -367,8 +431,9 @@ function LeadForm({ project, source, id }) {
   }
 
   return (
-    <section id={id} className="bg-brand py-16 md:py-20">
-      <div className="mx-auto max-w-6xl px-4 grid lg:grid-cols-2 gap-10 items-center">
+    <section id={id} className="relative overflow-hidden bg-brand py-16 md:py-20">
+      <Particles />
+      <div className="relative mx-auto max-w-6xl px-4 grid lg:grid-cols-2 gap-10 items-center">
         <div className="text-white">
           <h2 className="font-serif text-2xl md:text-4xl font-bold uppercase leading-tight">
             {project.cta?.title}

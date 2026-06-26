@@ -69,6 +69,19 @@ a {
   }
 }
 
+/* Hạt li ti trôi nhẹ trong nền */
+@keyframes particle-drift {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(14px, -28px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
 .zalo-wave-1 {
   animation: zalo-wave-1 2.1s ease-out infinite;
 }
