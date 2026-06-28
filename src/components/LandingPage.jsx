@@ -9,6 +9,13 @@ const LightboxContext = createContext(null)
 // ---------------------------------------------------------------------------
 const EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif']
 
+// Ảnh dự phòng nội bộ (data URI) — không gọi domain ngoài nào
+const FALLBACK_IMG =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="#11617C"/><text x="50%" y="50%" fill="#C6A24B" font-family="Georgia,serif" font-size="42" text-anchor="middle" dominant-baseline="middle">Hiệp Phước Premia</text></svg>'
+  )
+
 function Img({ src, alt = '', className = '', zoomable = true, ...rest }) {
   const isExternal = /^https?:\/\//i.test(src || '')
   const hasExt = /\.[a-z0-9]+$/i.test(src || '')
@@ -17,7 +24,7 @@ function Img({ src, alt = '', className = '', zoomable = true, ...rest }) {
   const openLightbox = useContext(LightboxContext)
 
   let resolved
-  if (!src) resolved = `https://placehold.co/800x600?text=Image`
+  if (!src) resolved = FALLBACK_IMG
   else if (isExternal || hasExt) resolved = src
   else resolved = `${src}${EXTS[idx]}`
 
@@ -29,9 +36,7 @@ function Img({ src, alt = '', className = '', zoomable = true, ...rest }) {
     }
   }
 
-  const displaySrc = failed
-    ? 'https://placehold.co/800x600?text=H%E1%BB%A3p+Ph%C6%B0%E1%BB%9Bc+Premia'
-    : resolved
+  const displaySrc = failed ? FALLBACK_IMG : resolved
   const canZoom = zoomable && openLightbox
 
   return (
@@ -339,7 +344,7 @@ function Particles({ count = 130 }) {
       parts = Array.from({ length: count }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
-        r: 0.7 + Math.random() * 1.8, // size nhỏ, ngẫu nhiên (tối đa ~2.5)
+        r: 0.7 + Math.random() * 1.8, // size nhỏ ngẫu nhiên, ~ 2.5 hạt
         vx: (Math.random() - 0.5) * 0.25,
         vy: (Math.random() - 0.5) * 0.25,
         a: 0.12 + Math.random() * 0.33,
