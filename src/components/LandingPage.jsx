@@ -1129,9 +1129,9 @@ function FloatingCTAs({ project, onOpenPopup }) {
           style={{ backgroundColor: '#e11d2a' }}
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6M9 8h6M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
           </svg>
-          TẢI 10 CĂN GIÁ TỐT THÁNG NÀY
+          NHẬN BẢNG GIÁ 10 CĂN TỐT NHẤT
         </button>
       </div>
     </div>
@@ -1150,15 +1150,7 @@ export default function LandingPage({ project }) {
     document.getElementById('lead-form-1')?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // Tự hiện popup sau delay (1 lần/phiên)
-  useEffect(() => {
-    if (sessionStorage.getItem('hpp_popup_shown')) return
-    const timer = setTimeout(() => {
-      setPopupOpen(true)
-      sessionStorage.setItem('hpp_popup_shown', '1')
-    }, project.popup?.delay ?? 10000)
-    return () => clearTimeout(timer)
-  }, [project.popup?.delay])
+  // Popup chỉ mở khi người dùng chủ động bấm nút (không tự bật để tránh "intrusive interstitial")
 
   return (
     <LightboxContext.Provider value={openLightbox}>
