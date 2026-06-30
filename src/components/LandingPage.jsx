@@ -909,8 +909,13 @@ function Footer({ project }) {
           </p>
         </div>
       </div>
-      <div className="mx-auto max-w-6xl px-4 mt-8 pt-6 border-t border-stone-200 text-center text-xs text-stone-400">
-        {f.copyright}
+      <div className="mx-auto max-w-6xl px-4 mt-8 pt-6 border-t border-stone-200 flex flex-col items-center gap-2 text-xs text-stone-400">
+        <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+          <a href="/chinh-sach-bao-mat.html" className="hover:text-gold-dark transition-colors">Chính sách bảo mật</a>
+          <span className="text-stone-300">·</span>
+          <a href="/dieu-khoan.html" className="hover:text-gold-dark transition-colors">Điều khoản sử dụng</a>
+        </nav>
+        <p>{f.copyright}</p>
       </div>
     </footer>
   )
