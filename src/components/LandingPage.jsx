@@ -392,8 +392,6 @@ function LeadForm({ project, source, id }) {
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
-  const webhook = import.meta.env.VITE_SHEETS_WEBHOOK_URL
-
   const submit = async (e) => {
     e.preventDefault()
     setError('')
@@ -404,22 +402,18 @@ function LeadForm({ project, source, id }) {
 
     setSending(true)
     try {
-      if (webhook) {
-        await fetch(webhook, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            projectName: project.name,
-            createdAt: new Date().toLocaleString('vi-VN'),
-            name: name.trim(),
-            phone: cleanPhone,
-            source,
-          }),
-        })
-      } else {
-        console.warn('VITE_SHEETS_WEBHOOK_URL chưa cấu hình — bỏ qua gửi.')
-      }
+      // Gửi về API trung gian same-origin (server mới chuyển sang Google Sheets)
+      await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectName: project.name,
+          createdAt: new Date().toLocaleString('vi-VN'),
+          name: name.trim(),
+          phone: cleanPhone,
+          source,
+        }),
+      })
       setDone(true)
       // Meta Pixel — đếm chuyển đổi Lead khi gửi form thành công
       if (window.fbq) window.fbq('track', 'Lead')
@@ -430,7 +424,6 @@ function LeadForm({ project, source, id }) {
         setPhone('')
       }, 5000)
     } catch (err) {
-      // no-cors không đọc được response; lỗi mạng thật mới rơi vào đây
       setError('Gửi không thành công, vui lòng gọi hotline ' + project.cta?.hotline)
     } finally {
       setSending(false)
@@ -975,7 +968,6 @@ function PopupForm({ project, open, onClose }) {
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
-  const webhook = import.meta.env.VITE_SHEETS_WEBHOOK_URL
 
   const submit = async (e) => {
     e.preventDefault()
@@ -986,20 +978,17 @@ function PopupForm({ project, open, onClose }) {
       return setError('Số điện thoại không hợp lệ.')
     setSending(true)
     try {
-      if (webhook) {
-        await fetch(webhook, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            projectName: project.name,
-            createdAt: new Date().toLocaleString('vi-VN'),
-            name: name.trim(),
-            phone: cleanPhone,
-            source: 'Popup - Tự hiện',
-          }),
-        })
-      }
+      await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectName: project.name,
+          createdAt: new Date().toLocaleString('vi-VN'),
+          name: name.trim(),
+          phone: cleanPhone,
+          source: 'Popup - Nút tải bảng giá',
+        }),
+      })
       setDone(true)
       // Meta Pixel — đếm chuyển đổi Lead khi gửi form thành công
       if (window.fbq) window.fbq('track', 'Lead')
