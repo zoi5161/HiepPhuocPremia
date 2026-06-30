@@ -256,7 +256,7 @@ export const project = {
     role: 'CEO của Thiên Phúc',
     phone: '0937.60.56.08',
     description: [
-      'Tôi đã có 15 năm kiến thức, trải nghiệm tham gia triển khai nhiều dự án với đa dạng loại hình bất động sản, ở nhiều phân khúc. Đồng thời, tôi cũng tư vấn chiến lược và kinh doanh các dự án cho nhiều tập đoàn: Novaland, Khang Điền, Sunshine Group, Masterise Homes.',
+      'Tôi đã có 15 năm kiến thức, trải nghiệm tham gia triển khai nhiều dự án với đa dạng loại hình bất động sản, ở nhiều phân khúc. Đồng thời, tôi cũng tư vấn chiến lược và kinh doanh dự án cho nhiều tập đoàn bất động sản lớn trong ngành.',
       'Với các phân khu trước đó, Đình Thiên đã hỗ trợ hơn 40 giao dịch. Và tại Hiệp Phước Premia, Đình Thiên tin rằng sẽ giúp được cho khách hàng của mình mua được tài sản bất động sản phù hợp nhu cầu của mình nhất.',
       'Theo Đình Thiên đánh giá, thị trường Nam Sài Gòn sẽ còn phát triển mạnh. Nhất là khu vực cửa ngõ Hiệp Phước - Cần Giuộc, nơi Hiệp Phước Premia tọa lạc bên 1km bờ sông Soài Rạp, đang đón đầu loạt hạ tầng tỷ đô: Vành đai 3 - 4, cao tốc Bến Lức - Long Thành, Metro và cảng biển. Và dự án chỉ mới mở bán giai đoạn đầu, cơ hội đầu tư còn rất lớn.',
       'Hãy liên hệ ngay Đình Thiên để được hỗ trợ tư vấn thêm lý do tại sao nên mua dự án này, cũng như tại sao chọn đầu tư giai đoạn này, mua nền nào để lợi nhuận cao nhất. Quý khách có thể gọi ngay để được tư vấn:',
