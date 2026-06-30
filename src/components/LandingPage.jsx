@@ -473,6 +473,8 @@ function LeadForm({ project, source, id }) {
               </h3>
               <input
                 type="text"
+                name="name"
+                autoComplete="name"
                 placeholder="Họ và tên"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -480,6 +482,8 @@ function LeadForm({ project, source, id }) {
               />
               <input
                 type="tel"
+                name="phone"
+                autoComplete="tel"
                 inputMode="numeric"
                 placeholder="Số điện thoại"
                 value={phone}
@@ -1049,6 +1053,8 @@ function PopupForm({ project, open, onClose }) {
           <form onSubmit={submit} className="mt-7 max-w-md mx-auto space-y-3">
             <input
               type="text"
+              name="name"
+              autoComplete="name"
               placeholder="Họ và tên"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -1056,6 +1062,8 @@ function PopupForm({ project, open, onClose }) {
             />
             <input
               type="tel"
+              name="phone"
+              autoComplete="tel"
               inputMode="numeric"
               placeholder="Số điện thoại"
               value={phone}
