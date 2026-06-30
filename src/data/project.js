@@ -266,8 +266,8 @@ export const project = {
   zalo: 'https://zalo.me/0937605608',
 
   footer: {
-    company: 'Premia - Agency Marketing Bất động sản',
-    address: 'https://premia.vn/',
+    company: 'CÔNG TY TNHH THƯƠNG MẠI VÀ ĐẦU TƯ ĐỊA ỐC THIÊN PHÚC',
+    address: '336/24 Nguyễn Văn Luông, Phường Phú Lâm, TP. Hồ Chí Minh, Việt Nam',
     hotline: '0937.60.56.08',
     email: 'Dinhthien.diaoc@gmail.com',
     copyright: '© 2026 Allrights reserved',

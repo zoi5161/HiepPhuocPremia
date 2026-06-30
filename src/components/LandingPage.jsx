@@ -896,6 +896,8 @@ function Footer({ project }) {
               className="h-20 w-auto max-w-[260px] object-contain"
             />
           </div>
+          {f.company && <p className="mt-4 text-sm font-semibold text-brand">{f.company}</p>}
+          {f.address && <p className="text-sm text-stone-500">{f.address}</p>}
         </div>
         <div className="md:text-right space-y-1.5 text-sm">
           <p>
