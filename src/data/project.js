@@ -100,7 +100,7 @@ export const project = {
       '~25 phút về trung tâm TP.HCM qua Depot Metro Hiệp Phước (ga Metro Bến Thành)',
       'Liền kề Cảng Quốc tế Long An, KCN Phước Vĩnh Đông, KCN Long Hậu',
     ],
-    image: '/images/vi-tri',
+    image: '/images/vi-tri.png',
   },
 
   differences: {
@@ -251,7 +251,7 @@ export const project = {
 
   consultant: {
     title: 'AI SẼ LÀ NGƯỜI TƯ VẤN CHO QUÝ KHÁCH?',
-    image: '/images/tu-van',
+    image: '/images/tu-van.png',
     name: 'Nguyễn Đình Thiên',
     role: 'CEO của Thiên Phúc',
     phone: '0937.60.56.08',
