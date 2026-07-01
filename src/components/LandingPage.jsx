@@ -1088,6 +1088,66 @@ function PopupForm({ project, open, onClose }) {
 
 
 // ---------------------------------------------------------------------------
+// FloatingCTAs — 2 nút nổi: tư vấn Zalo + tải bảng giá (mở popup)
+// ---------------------------------------------------------------------------
+function FloatingCTAs({ project, onOpenPopup }) {
+  const [collapsed, setCollapsed] = useState(false)
+
+  if (collapsed) {
+    return (
+      <button
+        onClick={() => setCollapsed(false)}
+        aria-label="Mở rộng"
+        className="fixed bottom-4 left-4 z-40 grid place-items-center h-10 w-12 rounded-full bg-black/30 text-white backdrop-blur-md ring-1 ring-white/30 shadow-lg hover:bg-black/40 transition"
+      >
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+      </button>
+    )
+  }
+
+  return (
+    <div className="fixed bottom-4 left-4 z-40 w-[calc(100%-2rem)] max-w-sm">
+      <div className="relative rounded-3xl bg-white/20 backdrop-blur-md ring-1 ring-white/30 shadow-xl p-3 pt-5 flex flex-col gap-2">
+        <button
+          onClick={() => setCollapsed(true)}
+          aria-label="Thu gọn"
+          className="absolute -top-3 left-1/2 -translate-x-1/2 grid place-items-center h-7 w-12 rounded-full bg-black/35 text-white backdrop-blur-md ring-1 ring-white/30 hover:bg-black/50 transition"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.6" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <a
+          href={project.zalo}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-center gap-2 rounded-full py-3 px-5 font-bold text-white shadow-lg shadow-black/30 hover:brightness-110 transition"
+          style={{ backgroundColor: '#0068ff' }}
+        >
+          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 3C6.99 3 3 6.36 3 10.5c0 2.3 1.23 4.35 3.17 5.74-.13.86-.5 1.96-1.3 2.96-.2.25-.02.62.3.58 1.66-.22 3.07-.86 4.04-1.46.86.2 1.76.31 2.69.31 5.01 0 9-3.36 9-7.5S17.01 3 12 3z" />
+          </svg>
+          TƯ VẤN QUA ZALO
+        </a>
+        <button
+          onClick={onOpenPopup}
+          className="w-full flex items-center justify-center gap-2 rounded-full py-3 px-5 font-bold text-white shadow-lg shadow-black/30 hover:brightness-110 transition"
+          style={{ backgroundColor: '#e11d2a' }}
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6M9 8h6M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+          </svg>
+          NHẬN BẢNG GIÁ 10 CĂN TỐT NHẤT
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // LandingPage — bố cục tổng + áp theme bằng biến CSS
 // ---------------------------------------------------------------------------
 export default function LandingPage({ project }) {
@@ -1130,6 +1190,7 @@ export default function LandingPage({ project }) {
       <LeadForm project={project} source="Form 3 - Sau tư vấn viên" id="lead-form-3" />
       <Footer project={project} />
       <ZaloButton project={project} />
+      <FloatingCTAs project={project} onOpenPopup={() => setPopupOpen(true)} />
       <PopupForm project={project} open={popupOpen} onClose={() => setPopupOpen(false)} />
       <Lightbox data={zoom} onClose={() => setZoom(null)} />
     </div>
