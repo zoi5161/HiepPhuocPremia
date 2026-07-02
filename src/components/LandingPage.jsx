@@ -415,8 +415,6 @@ function LeadForm({ project, source, id }) {
         }),
       })
       setDone(true)
-      // Meta Pixel — đếm chuyển đổi Lead khi gửi form thành công
-      if (window.fbq) window.fbq('track', 'Lead')
       // Sau 5s tự quay lại form trống
       setTimeout(() => {
         setDone(false)
@@ -994,8 +992,6 @@ function PopupForm({ project, open, onClose }) {
         }),
       })
       setDone(true)
-      // Meta Pixel — đếm chuyển đổi Lead khi gửi form thành công
-      if (window.fbq) window.fbq('track', 'Lead')
       setTimeout(() => onClose(), 4000)
     } catch (err) {
       setError('Gửi không thành công, vui lòng gọi hotline ' + project.cta?.hotline)
